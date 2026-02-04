@@ -1,0 +1,110 @@
+/* 你发的原版全局CSS，一字未改 */
+html {
+  background-color: #f1f5f9;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', 'Arial', sans-serif;
+  /* 背景图全屏相关样式 */
+  background-image: url("/images/pic1.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}
+
+body {
+  margin: 0 auto;
+  width: 100%;
+  max-width: 80ch;
+  padding: 1rem;
+  line-height: 1.5;
+  min-height: 100vh;
+  background: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  margin: 1rem 0;
+  font-size: 2.5rem;
+  text-align: center; /* 新增：标题文本水平居中 */
+}
+
+/* 全局超链接基础样式：统一字体、颜色、去掉默认下划线 */
+a {
+  /* 超链接字体：和正文一致/单独调整，可改大小、加粗 */
+  font-size: 18px; /* 和关于页正文字体一致，也可改16px/20px */
+  font-weight: 500; /* 轻微加粗，醒目不突兀，400是常规，700是粗体 */
+  font-family: inherit; /* 继承全局字体，不用单独写，保证风格统一 */
+  
+  /* 超链接颜色：适配柔白背景，推荐低饱和蓝（高级不刺眼），可改 */
+  color: #2563eb; 
+  
+  /* 去掉浏览器默认下划线，更简洁 */
+  text-decoration: none; 
+  
+  /* 可选：加一点内边距，点击区域更大，体验更好 */
+  padding: 2px 4px;
+}
+
+/* 鼠标悬浮hover效果：加下划线+轻微变色，有交互反馈（美观关键） */
+a:hover {
+  text-decoration: underline; /* 悬浮显示下划线，提示可点击 */
+  color: #1d4ed8; /* 悬浮略加深颜色，层次感更强 */
+  text-underline-offset: 4px; /* 下划线和文字拉开一点距离，不拥挤（超美观小细节） */
+}
+
+/* 可选：给首页/关于页的独立链接加上下间距，避免和文字贴太紧 */
+body > a {
+  display: inline-block; /* 让margin生效 */
+  margin-top: 1rem; /* 和上方正文拉开间距 */
+}
+
+/* 👇 播放器全局样式（和你的页面色系统一，左下角+蓝底白箭头，无需修改） */
+#music-player {
+  position: fixed;
+  left: 30px;
+  bottom: 30px;
+  z-index: 9999; /* 最高层级，不被任何元素遮挡 */
+  display: flex;
+  gap: 8px; /* 播放器和按钮间距，和你风格一致 */
+  align-items: center;
+}
+#player-audio {
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  background: rgba(255,255,255,0.8); /* 半透明白，适配你的背景图，不刺眼 */
+}
+#player-next {
+  width: 30px;
+  height: 28px;
+  background-color: #2563eb; /* 和你的超链接同色系，全局风格统一 */
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  transition: all 0.2s ease;
+}
+#player-next:hover {
+  background-color: #1d4ed8; /* 和超链接hover同色，统一交互 */
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+#player-next:active {
+  transform: scale(0.95); /* 点击按压效果，和你现有交互一致 */
+}
+
+/* 播放器移动端适配（自动适配手机，无需单独改） */
+@media (max-width: 768px) {
+  #music-player {
+    left: 20px;
+    bottom: 20px;
+    gap: 6px;
+  }
+}

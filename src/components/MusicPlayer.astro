@@ -1,0 +1,84 @@
+---
+// 【唯一需要修改的地方】替换成你public/music里的mp3，无中文/空格/特殊符号
+const MUSIC_LIST = [
+  '/music/song1.mp3',
+  '/music/song2.mp3',
+  '/music/song3.mp3',
+  '/music/song4.mp3',
+  '/music/song5.mp3',
+  '/music/song6.mp3',
+  // 加歌直接换行：'/music/你的音乐.mp3'
+];
+---
+
+<!-- 播放器DOM结构：和global.css的选择器一一对应，无需修改 -->
+<div id="music-player">
+  <audio id="player-audio" controls preload="none"></audio>
+  <button id="player-next" title="下一首">▶</button>
+</div>
+
+<!-- is:inline 关键指令：让脚本全局生效，不被Astro沙箱隔离 -->
+<script is:inline>
+  // 全局音频实例：挂载到window，页面跳转不销毁，所有页面共用
+  if (!window.GlobalMusicPlayer) {
+    window.GlobalMusicPlayer = {
+      list: MUSIC_LIST,    // 全局音乐列表
+      index: 0,            // 全局当前播放索引
+      audio: new Audio(),  // 核心播放实例，全局唯一
+      isPlaying: false,    // 全局播放/暂停状态
+      currentTime: 0       // 全局播放进度（秒），页面跳转后恢复
+    };
+  }
+  const gmp = window.GlobalMusicPlayer;
+
+  // 页面加载完成后初始化，恢复上一页的播放状态
+  window.onload = function() {
+    const audioDom = document.getElementById('player-audio');
+    const nextBtn = document.getElementById('player-next');
+
+    // 1. 恢复：当前歌曲、播放进度、音量
+    audioDom.src = gmp.list[gmp.index];
+    audioDom.currentTime = gmp.currentTime;
+    gmp.audio.src = gmp.list[gmp.index];
+    gmp.audio.currentTime = gmp.currentTime;
+    gmp.audio.volume = audioDom.volume = 0.8; // 默认音量，可改0-1
+
+    // 2. 恢复：播放/暂停状态
+    if (gmp.isPlaying) {
+      gmp.audio.play().catch(err => {});
+      audioDom.play().catch(err => {});
+    }
+
+    // 3. 实时保存播放进度（每100ms更新，页面跳转不丢失）
+    gmp.audio.ontimeupdate = () => {
+      gmp.currentTime = gmp.audio.currentTime;
+      audioDom.currentTime = gmp.currentTime;
+    };
+
+    // 4. 保存：播放/暂停状态到全局
+    gmp.audio.onplay = () => { gmp.isPlaying = true; };
+    gmp.audio.onpause = () => { gmp.isPlaying = false; };
+
+    // 5. 页面DOM操作 → 同步到全局实例（播放/暂停/音量）
+    audioDom.onplay = () => gmp.audio.play().catch(err => {});
+    audioDom.onpause = () => gmp.audio.pause();
+    audioDom.onvolumechange = () => { gmp.audio.volume = audioDom.volume; };
+
+    // 6. 下一首功能：手动点击+自动连播（播放结束后触发）
+    function playNext() {
+      gmp.index = (gmp.index + 1) % gmp.list.length; // 循环切歌
+      gmp.currentTime = 0; // 新歌曲进度归0
+      // 更新全局实例+页面DOM
+      gmp.audio.src = gmp.list[gmp.index];
+      audioDom.src = gmp.list[gmp.index];
+      gmp.audio.currentTime = audioDom.currentTime = 0;
+      // 正在播放则继续播放
+      if (gmp.isPlaying) {
+        gmp.audio.play().catch(err => {});
+        audioDom.play().catch(err => {});
+      }
+    }
+    nextBtn.onclick = playNext; // 手动点击下一首
+    gmp.audio.onended = playNext; // 自动连播
+  };
+</script>

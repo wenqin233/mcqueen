@@ -1,0 +1,91 @@
+---
+const pageTitle = "关于";
+import '../styles/global.css';
+---
+
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type ="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content = {Astro.generator} >
+    <title>Mcqueenのblog-about</title>
+    <style>
+      /* 新增：整体容器+半透明背景板 + 页面居中，不影响原有内联样式 */
+      .content-wrapper {
+        max-width: 900px;
+        margin: 4rem auto;
+        padding: 3rem 4rem;
+        background-color: rgba(255, 255, 255, 0.85); /* 半透明白底，适配背景图 */
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      /* 美化首页按钮：和主页按钮样式/动画完全一致 */
+      .home-btn {
+        display: inline-block;
+        padding: 20px 60px;
+        font-size: 20px;
+        color: #fff;
+        background-color: #4299e1;
+        text-decoration: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        text-align: center;
+        min-width: 260px;
+      }
+      .home-btn:hover {
+        background-color: #3182ce;
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(66, 153, 225, 0.4);
+      }
+      .home-btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(66, 153, 225, 0.2);
+        background-color: #2b6cb0;
+      }
+      /* 移动端适配：缩小容器内边距+按钮尺寸，避免溢出 */
+      @media (max-width: 768px) {
+        .content-wrapper {
+          margin: 2rem 1rem;
+          padding: 2rem 1.5rem;
+        }
+        .home-btn {
+          padding: 16px 40px;
+          font-size: 18px;
+          min-width: 220px;
+        }
+        p {
+          font-size: 22px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 新增半透明背景容器：包裹所有标题+正文，提高可读性 -->
+    <div class="content-wrapper">
+      <!-- 原页面所有内容：一字未改完全保留 -->
+      <h1>About</h1>
+      <h1>这是{pageTitle}页面</h1>
+      <p style="
+        font-size: 28px;
+        text-indent: 2em;
+        line-height: 1.8;
+        margin: 3rem 0;
+      ">
+        这是Mcqueen自己的博客，我会在这里发一点自己的读后感，对历史和哲学一类的个人研究，还有出去旅行的见闻和照片，我是个喜欢文艺和历史的计算机学生，我没有专业学习过这些东西全都是个人积累与爱好，可能有失偏颇请见谅，其实我当年或许应该学文的...
+      </p>
+      <p style="
+        font-size: 28px;
+        text-indent: 2em;
+        line-height: 1.8;
+        margin: 3rem 0;
+      ">
+        另外很多我写的内容可能是我以前就有的，我会慢慢把其他平台的文章和以前读过的书慢慢写进来，我的博客制作水平也比较一般，见谅
+      </p>
+      <!-- 替换原链接：美化成和主页一致的按钮+动画 -->
+      <a href="/" class="home-btn">首页</a>
+    </div>
+  </body>
+</html>

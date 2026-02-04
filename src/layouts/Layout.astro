@@ -1,0 +1,144 @@
+---
+// 全局Layout：仅包含所有页面共用的内容（背景/播放器/基础样式）
+---
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="generator" content={Astro.generator} />
+  <!-- 页面标题插槽：每个页面自定义独有的标题 -->
+  <title>{Astro.props.title || 'Mcqueenのblog'}</title>
+  <style>
+    /* 【全局公共样式】所有页面共用，改一处同步所有 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* 全局背景图：所有页面统一，保留你的原始设置 */
+    html {
+      background-color: #f1f5f9;
+      font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', 'Arial', sans-serif;
+      background-image: url("/images/pic1.png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center center;
+      background-attachment: fixed;
+    }
+    body {
+      min-height: 100vh;
+      font-family: "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
+    }
+    /* 全局基础超链接样式（页面可自定义覆盖） */
+    a {
+      text-decoration: none;
+      font-family: inherit;
+    }
+    /* 【全局播放器样式】所有页面统一，保留你的原始设置 */
+    .music-play-area {
+      position: fixed;
+      left: 30px;
+      bottom: 30px;
+      z-index: 999; /* 提高层级，避免被页面内容遮挡 */
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .next-song-btn {
+      width: 30px;
+      height: 28px;
+      background: #4299e1;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      transition: all 0.2s ease;
+    }
+    .next-song-btn:hover {
+      background: #3182ce;
+      box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+    }
+    .next-song-btn:active {
+      transform: scale(0.95);
+    }
+    /* 播放器移动端适配：全局统一 */
+    @media (max-width: 768px) {
+      .music-play-area {
+        left: 20px;
+        bottom: 20px;
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面内容插槽：每个页面的「独有样式+独有内容」会插入到这里 -->
+  <slot />
+
+  <!-- 【全局播放器】所有页面自动显示，跳转不中断，无需重复写 -->
+  <div class="music-play-area">
+    <audio id="musicPlayer" controls preload="none">
+      你的浏览器不支持音频播放，请更换Chrome/Edge/Firefox等现代浏览器
+    
+    <button class="next-song-btn" id="nextSongBtn">▶</button>
+  </div>
+
+  <!-- 【全局播放器脚本】跳转不中断核心逻辑，保留所有原始功能 -->
+  <script is:inline>
+    // 【唯一需改】替换为你public/music里的实际mp3，无中文/特殊符号
+    const musicList = [
+      '/music/song1.mp3',
+      '/music/song2.mp3',
+      '/music/song3.mp3',
+      '/music/song4.mp3',
+      '/music/song5.mp3',
+      '/music/song6.mp3'
+    ];
+    // 全局播放状态：挂载window，页面跳转保存进度/状态
+    if (!window.GlobalMusicPlayer) {
+      window.GlobalMusicPlayer = {
+        list: musicList,
+        currentIndex: 0,
+        isPlaying: false,
+        currentTime: 0
+      };
+    }
+    const gmp = window.GlobalMusicPlayer;
+    let musicPlayer, nextSongBtn;
+
+    window.onload = function() {
+      musicPlayer = document.getElementById('musicPlayer');
+      nextSongBtn = document.getElementById('nextSongBtn');
+      // 恢复上一页播放状态
+      musicPlayer.src = gmp.list[gmp.currentIndex];
+      musicPlayer.currentTime = gmp.currentTime;
+      if (gmp.isPlaying) musicPlayer.play().catch(err => {});
+      // 实时保存进度/状态
+      musicPlayer.ontimeupdate = () => gmp.currentTime = musicPlayer.currentTime;
+      musicPlayer.onplay = () => gmp.isPlaying = true;
+      musicPlayer.onpause = () => gmp.isPlaying = false;
+      // 切歌功能（手动+自动）
+      const playNext = () => {
+        gmp.currentIndex = (gmp.currentIndex + 1) % gmp.list.length;
+        gmp.currentTime = 0;
+        musicPlayer.src = gmp.list[gmp.currentIndex];
+        musicPlayer.play().catch(err => {});
+      };
+      nextSongBtn.onclick = playNext;
+      musicPlayer.onended = playNext;
+      // 页面首次点击自动播放（不需要可注释）
+      document.body.addEventListener('click', () => {
+        musicPlayer.play().catch(err => {});
+      }, { once: true });
+    };
+  </script>
+</body>
+</html>

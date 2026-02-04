@@ -1,0 +1,92 @@
+---
+import '../styles/global.css';
+---
+
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type ="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content = {Astro.generator} >
+    <title>Mcqueenのblog-list</title>
+    <style>
+      .content-wrapper {
+        max-width: 900px;
+        margin: 4rem auto;
+        padding: 3rem 4rem;
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      .home-btn {
+        display: inline-block;
+        padding: 20px 60px;
+        font-size: 20px;
+        color: #fff;
+        background-color: #4299e1;
+        text-decoration: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        text-align: center;
+        min-width: 260px;
+        margin: 2rem 0;
+      }
+      .blog-link {
+        display: block;
+        font-size: 22px;
+        color: #4299e1;
+        text-decoration: none;
+        line-height: 1.8;
+        padding: 12px 20px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+      }
+      .blog-link:hover {
+        color: #3182ce;
+        background-color: rgba(66, 153, 225, 0.1);
+        border-color: rgba(66, 153, 225, 0.2);
+        transform: translateX(8px);
+      }
+      .home-btn:hover {
+        background-color: #3182ce;
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(66, 153, 225, 0.4);
+      }
+      .home-btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(66, 153, 225, 0.2);
+        background-color: #2b6cb0;
+      }
+      @media (max-width: 768px) {
+        .content-wrapper {
+          margin: 2rem 1rem;
+          padding: 2rem 1.5rem;
+        }
+        .home-btn {
+          padding: 16px 40px;
+          font-size: 18px;
+          min-width: 220px;
+        }
+        .blog-link {
+          font-size: 18px;
+          padding: 10px 15px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="content-wrapper">
+      <h1>List</h1>
+      <h1>这是博客列表页面</h1>
+      <a href="/" class="home-btn">首页</a>
+      <a href="/posts/blog1/" class="blog-link">阅读随笔系列NO1《人偶游戏》-日本-东野圭吾</a><br>
+    </div>
+  </body>
+</html>
