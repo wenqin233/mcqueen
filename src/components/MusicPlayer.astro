@@ -1,84 +1,197 @@
 ---
-// 【唯一需要修改的地方】替换成你public/music里的mp3，无中文/空格/特殊符号
-const MUSIC_LIST = [
-  '/music/song1.mp3',
-  '/music/song2.mp3',
-  '/music/song3.mp3',
-  '/music/song4.mp3',
-  '/music/song5.mp3',
-  '/music/song6.mp3',
-  // 加歌直接换行：'/music/你的音乐.mp3'
-];
+// src/components/MusicPlayer.astro
+// Astro 公共音乐播放器组件：client:load 保证切页常驻
 ---
+<!-- 播放器专属样式：抽离出来，引入组件自动生效 -->
+<style is:global>
+  .music-play-area {
+    position: fixed;
+    left: 30px;
+    bottom: 30px;
+    z-index: 999;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: #fff;
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .music-btn {
+    width: 28px;
+    height: 28px;
+    background: #4299e1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    transition: all 0.2s ease;
+  }
+  .music-btn:hover {
+    background: #3182ce;
+    box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+  }
+  .music-btn:active {
+    transform: scale(0.95);
+  }
+  .music-play-pause {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+  #musicPlayer {
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #e2e8f0;
+  }
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .music-play-area {
+      left: 20px;
+      bottom: 20px;
+      gap: 6px;
+    }
+    .music-btn {
+      width: 26px;
+      height: 26px;
+      font-size: 13px;
+    }
+    .music-play-pause {
+      width: 28px;
+      height: 28px;
+    }
+  }
+</style>
 
-<!-- 播放器DOM结构：和global.css的选择器一一对应，无需修改 -->
-<div id="music-player">
-  <audio id="player-audio" controls preload="none"></audio>
-  <button id="player-next" title="下一首">▶</button>
+<!-- 播放器DOM：client:load 保证容器常驻 -->
+<div class="music-play-area" client:load>
+  <audio 
+    id="musicPlayer" 
+    controls 
+    preload="auto"
+    style="border: none; outline: none;"
+    client:load
+  >
+    你的浏览器不支持音频播放，请更换Chrome/Edge/Firefox等现代浏览器
+  </audio>
+  <button class="music-btn" id="prevSongBtn" client:load>←</button>
+  <button class="music-btn music-play-pause" id="playPauseBtn" client:load>▶</button>
+  <button class="music-btn" id="nextSongBtn" client:load>→</button>
 </div>
 
-<!-- is:inline 关键指令：让脚本全局生效，不被Astro沙箱隔离 -->
-<script is:inline>
-  // 全局音频实例：挂载到window，页面跳转不销毁，所有页面共用
-  if (!window.GlobalMusicPlayer) {
-    window.GlobalMusicPlayer = {
-      list: MUSIC_LIST,    // 全局音乐列表
-      index: 0,            // 全局当前播放索引
-      audio: new Audio(),  // 核心播放实例，全局唯一
-      isPlaying: false,    // 全局播放/暂停状态
-      currentTime: 0       // 全局播放进度（秒），页面跳转后恢复
+<!-- 播放器核心脚本：client:load 是关键！保证切页不销毁、状态常驻 -->
+<script client:load>
+  // 音乐列表：所有页面共用，改这里即可
+  const musicList = [
+    '/music/song1.mp3', 
+    '/music/song2.mp3',
+    '/music/song3.mp3',
+    '/music/song4.mp3',
+    '/music/song5.mp3',
+    '/music/song6.mp3'
+  ];
+  const STORAGE_KEY = 'BLOG_MUSIC_STATE';
+
+  // 本地存储工具方法
+  function getMusicState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : { currentIndex: 0, currentTime: 0, isPlaying: false };
+  }
+  function saveMusicState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // 全局状态：挂载window，避免重复初始化
+  if (!window.musicStore) {
+    window.musicStore = {
+      state: getMusicState(),
+      isInited: false
     };
   }
-  const gmp = window.GlobalMusicPlayer;
+  const { musicStore } = window;
+  let musicState = musicStore.state;
 
-  // 页面加载完成后初始化，恢复上一页的播放状态
-  window.onload = function() {
-    const audioDom = document.getElementById('player-audio');
-    const nextBtn = document.getElementById('player-next');
+  // 获取DOM元素
+  const musicPlayer = document.getElementById('musicPlayer');
+  const prevBtn = document.getElementById('prevSongBtn');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const nextBtn = document.getElementById('nextSongBtn');
 
-    // 1. 恢复：当前歌曲、播放进度、音量
-    audioDom.src = gmp.list[gmp.index];
-    audioDom.currentTime = gmp.currentTime;
-    gmp.audio.src = gmp.list[gmp.index];
-    gmp.audio.currentTime = gmp.currentTime;
-    gmp.audio.volume = audioDom.volume = 0.8; // 默认音量，可改0-1
-
-    // 2. 恢复：播放/暂停状态
-    if (gmp.isPlaying) {
-      gmp.audio.play().catch(err => {});
-      audioDom.play().catch(err => {});
+  // 初始化播放器
+  function initPlayer() {
+    musicPlayer.src = musicList[musicState.currentIndex];
+    musicPlayer.currentTime = musicState.currentTime;
+    playPauseBtn.innerHTML = musicState.isPlaying ? '❚❚' : '▶';
+    // 自动恢复播放
+    if (musicState.isPlaying) {
+      setTimeout(() => musicPlayer.play().catch(err => {}), 100);
     }
+    // 首次交互触发
+    document.body.addEventListener('click', () => {
+      if (musicState.isPlaying) musicPlayer.play().catch(err => {});
+    }, { once: true });
+  }
 
-    // 3. 实时保存播放进度（每100ms更新，页面跳转不丢失）
-    gmp.audio.ontimeupdate = () => {
-      gmp.currentTime = gmp.audio.currentTime;
-      audioDom.currentTime = gmp.currentTime;
-    };
-
-    // 4. 保存：播放/暂停状态到全局
-    gmp.audio.onplay = () => { gmp.isPlaying = true; };
-    gmp.audio.onpause = () => { gmp.isPlaying = false; };
-
-    // 5. 页面DOM操作 → 同步到全局实例（播放/暂停/音量）
-    audioDom.onplay = () => gmp.audio.play().catch(err => {});
-    audioDom.onpause = () => gmp.audio.pause();
-    audioDom.onvolumechange = () => { gmp.audio.volume = audioDom.volume; };
-
-    // 6. 下一首功能：手动点击+自动连播（播放结束后触发）
-    function playNext() {
-      gmp.index = (gmp.index + 1) % gmp.list.length; // 循环切歌
-      gmp.currentTime = 0; // 新歌曲进度归0
-      // 更新全局实例+页面DOM
-      gmp.audio.src = gmp.list[gmp.index];
-      audioDom.src = gmp.list[gmp.index];
-      gmp.audio.currentTime = audioDom.currentTime = 0;
-      // 正在播放则继续播放
-      if (gmp.isPlaying) {
-        gmp.audio.play().catch(err => {});
-        audioDom.play().catch(err => {});
-      }
+  // 核心控制方法
+  function playPrev() {
+    musicState.currentIndex = (musicState.currentIndex - 1 + musicList.length) % musicList.length;
+    musicState.currentTime = 0;
+    musicPlayer.src = musicList[musicState.currentIndex];
+    saveMusicState(musicState);
+    if (musicState.isPlaying) musicPlayer.play().catch(err => {});
+  }
+  function togglePlay() {
+    if (musicState.isPlaying) {
+      musicPlayer.pause();
+    } else {
+      musicPlayer.play().catch(err => {
+        alert('首次播放请再次点击～');
+        musicPlayer.play();
+      });
     }
-    nextBtn.onclick = playNext; // 手动点击下一首
-    gmp.audio.onended = playNext; // 自动连播
-  };
+  }
+  function playNext() {
+    musicState.currentIndex = (musicState.currentIndex + 1) % musicList.length;
+    musicState.currentTime = 0;
+    musicPlayer.src = musicList[musicState.currentIndex];
+    saveMusicState(musicState);
+    if (musicState.isPlaying) musicPlayer.play().catch(err => {});
+  }
+
+  // 实时同步状态
+  function syncState() {
+    musicState.isPlaying = !musicPlayer.paused;
+    musicState.currentTime = musicPlayer.currentTime;
+    playPauseBtn.innerHTML = musicState.isPlaying ? '❚❚' : '▶';
+    saveMusicState(musicState);
+  }
+
+  // 仅首次初始化事件（避免重复绑定）
+  if (!musicStore.isInited) {
+    initPlayer();
+    // 绑定事件
+    prevBtn.onclick = playPrev;
+    playPauseBtn.onclick = togglePlay;
+    nextBtn.onclick = playNext;
+    musicPlayer.onended = playNext;
+    musicPlayer.onplay = syncState;
+    musicPlayer.onpause = syncState;
+    setInterval(syncState, 500);
+    // 页面卸载保存状态
+    window.addEventListener('beforeunload', () => {
+      musicState.currentTime = musicPlayer.currentTime;
+      musicState.isPlaying = !musicPlayer.paused;
+      saveMusicState(musicState);
+    });
+    musicStore.isInited = true;
+  } else {
+    // 非首次加载，直接恢复状态
+    initPlayer();
+  }
 </script>
