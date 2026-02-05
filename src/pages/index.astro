@@ -1,23 +1,20 @@
 ---
 title: "Mcqueenのblog"
+// 引入播放器组件
+import MusicPlayer from '../components/MusicPlayer.astro';
 ---
 
 <!DOCTYPE html>
 <html lang="zh-cn">
 <head>
+  <!-- 你的原有head内容：背景、字体、博客样式等，完全保留 -->
   <meta charset="utf-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="generator" content={Astro.generator} />
   <title>Mcqueenのblog</title>
   <style>
-    /* 【全局公共样式】所有页面共用（原Layout样式） */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    /* 全局背景图：保留原始设置 */
+    /* 只保留你的博客主体样式，删掉播放器样式 */
     html {
       background-color: #f1f5f9;
       font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', 'Arial', sans-serif;
@@ -30,64 +27,9 @@ title: "Mcqueenのblog"
     body {
       min-height: 100vh;
       font-family: "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
-    }
-    /* 全局基础超链接样式 */
-    a {
-      text-decoration: none;
-      font-family: inherit;
-    }
-    /* 【全局播放器样式】保留原始设置 */
-    .music-play-area {
-      position: fixed;
-      left: 30px;
-      bottom: 30px;
-      z-index: 999; /* 提高层级，避免被页面内容遮挡 */
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .next-song-btn {
-      width: 30px;
-      height: 28px;
-      background: #4299e1;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      margin: 0;
-      transition: all 0.2s ease;
-    }
-    .next-song-btn:hover {
-      background: #3182ce;
-      box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
-    }
-    .next-song-btn:active {
-      transform: scale(0.95);
-    }
-    /* 播放器移动端适配：全局统一 */
-    @media (max-width: 768px) {
-      .music-play-area {
-        left: 20px;
-        bottom: 20px;
-        gap: 6px;
-      }
-    }
-
-    /* 你原始的所有页面样式 - 一字未改完全保留 */
-    *,.blog-container {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
       overflow: hidden;
-      font-family: "PingFang SC", "Microsoft YaHei", "微软雅黑", sans-serif;
     }
+    a { text-decoration: none; font-family: inherit; }
     .blog-container {
       position: fixed;
       top: 0;
@@ -160,28 +102,16 @@ title: "Mcqueenのblog"
       width: 100%;
       align-items: center;
     }
-    /* 你原始的页面移动端适配 - 一字未改 */
     @media (max-width: 768px) {
-      .blog-container {
-        width: 100%;
-      }
-      .blog-title {
-        font-size: 36px;
-        letter-spacing: 4px;
-      }
-      .blog-subtitle {
-        font-size: 20px;
-      }
-      .blog-btn {
-        padding: 16px 40px;
-        font-size: 18px;
-        min-width: 220px;
-      }
+      .blog-container { width: 100%; }
+      .blog-title { font-size: 36px; letter-spacing: 4px; }
+      .blog-subtitle { font-size: 20px; }
+      .blog-btn { padding: 16px 40px; font-size: 18px; min-width: 220px; }
     }
   </style>
 </head>
 <body>
-  <!-- 你原始的所有页面内容 - 一字未改完全保留 -->
+  <!-- 你的博客主体内容，完全保留 -->
   <div class="blog-container">
     <div class="blog-card">
       <h1 class="blog-title">Mcqueenのblog</h1>
@@ -193,69 +123,7 @@ title: "Mcqueenのblog"
     </div>
   </div>
 
-  <!-- 【全局播放器】原Layout中的播放器，集成后保留 -->
-  <div class="music-play-area">
-    <audio id="musicPlayer" controls preload="none">
-      你的浏览器不支持音频播放，请更换Chrome/Edge/Firefox等现代浏览器
-    </audio>
-    <button class="next-song-btn" id="nextSongBtn">▶</button>
-  </div>
-
-  <!-- 【全局播放器脚本】原Layout中的不中断脚本，集成后保留 -->
-  <!-- 替换首页原有播放器脚本，保留DOM和样式不变 -->
-<script is:inline>
-  const musicList = [
-    '/music/song1.mp3', // 替换为你的实际音乐文件
-    '/music/song2.mp3',
-    '/music/song3.mp3',
-    '/music/song4.mp3',
-    '/music/song5.mp3',
-    '/music/song6.mp3'
-  ];
-  
-  if (!window.GlobalMusicPlayer) {
-    window.GlobalMusicPlayer = {
-      list: musicList,
-      currentIndex: 0,
-      isPlaying: false,
-      currentTime: 0,
-      isInited: false
-    };
-  }
-  const gmp = window.GlobalMusicPlayer;
-  const musicPlayer = document.getElementById('musicPlayer');
-  const nextSongBtn = document.getElementById('nextSongBtn');
-
-  // 初始化播放（首页首次加载）
-  musicPlayer.src = gmp.list[gmp.currentIndex];
-  musicPlayer.currentTime = gmp.currentTime;
-
-  // 实时同步状态
-  musicPlayer.ontimeupdate = () => {
-    gmp.currentTime = musicPlayer.currentTime;
-  };
-  musicPlayer.onplay = () => {
-    gmp.isPlaying = true;
-  };
-  musicPlayer.onpause = () => {
-    gmp.isPlaying = false;
-  };
-
-  // 仅首次绑定事件
-  if (!gmp.isInited) {
-    const playNext = () => {
-      gmp.currentIndex = (gmp.currentIndex + 1) % gmp.list.length;
-      gmp.currentTime = 0;
-      musicPlayer.src = gmp.list[gmp.currentIndex];
-      musicPlayer.play().catch(err => {});
-    };
-    nextSongBtn.onclick = playNext;
-    musicPlayer.onended = playNext;
-    document.body.addEventListener('click', () => {
-      musicPlayer.play().catch(err => {});
-    }, { once: true });
-    gmp.isInited = true;
-  }
-</script>
+  <!-- 引入播放器组件：就这一行！ -->
+  <MusicPlayer />
 </body>
 </html>
